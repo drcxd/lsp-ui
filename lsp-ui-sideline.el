@@ -448,6 +448,13 @@ CURRENT is non-nil when the point is on the symbol."
                      (split-string (buffer-string) "\n")))))
              lines))
 
+(defun lsp-ui-sideline--error-level-face (level)
+  "Return face for error level LEVEL."
+  (let ((level-str (symbol-name level)))
+    (cond ((string-match-p "error" level-str) 'error)
+          ((string-match-p "warning" level-str) 'warning)
+          (t nil))))
+
 (defun lsp-ui-sideline--diagnostics (buffer bol eol)
   "Show diagnostics belonging to the current line.
 Loop over flycheck errors with `flycheck-overlay-errors-in'.
@@ -470,8 +477,10 @@ Push sideline overlays on `lsp-ui-sideline--ovs'."
                  (msg (replace-regexp-in-string " " " " msg))
                  (len (length msg))
                  (level (flycheck-error-level e))
+                 (face (lsp-ui-sideline--error-level-face level))
                  (margin (lsp-ui-sideline--margin-width))
                  (msg (progn (add-face-text-property 0 len 'lsp-ui-sideline-global nil msg)
+                             (if face (add-face-text-property 0 len face nil msg))
                              msg))
                  (string (concat (propertize " " 'display `(space :align-to (- right-fringe ,(lsp-ui-sideline--align len margin))))
                                  (propertize msg 'display (lsp-ui-sideline--compute-height))))
